@@ -12,4 +12,4 @@ if (document.querySelector('#chat-wrapper')) {
 
 if (document.querySelector(".header-search-icon")) {
     new Search()
-} 
+}

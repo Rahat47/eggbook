@@ -55,17 +55,17 @@ export default class RegistrationForm {
     formSubmitHandler() {
         this.usernameImmediately()
         this.usernameAfterDelay()
-        this.emailAfterDelay() 
+        this.emailAfterDelay()
         this.passwordAfterDelay()
         this.passwordImmediately()
 
         if (
-                this.username.isUnique &&
-                !this.username.errors && 
-                this.email.isUnique && 
-                !this.email.errors && 
-                !this.password.errors
-            ) {
+            this.username.isUnique &&
+            !this.username.errors &&
+            this.email.isUnique &&
+            !this.email.errors &&
+            !this.password.errors
+        ) {
             this.form.submit()
         }
     }
@@ -73,7 +73,7 @@ export default class RegistrationForm {
 
     //is the value is different from previous value
     isDifferent(el, handler) {
-        if(el.previousValue != el.value) {
+        if (el.previousValue != el.value) {
             handler.call(this)
         }
         el.previousValue = el.value
@@ -124,7 +124,7 @@ export default class RegistrationForm {
         }
 
         if (!this.email.errors) {
-            axios.post('/doesEmailExist', {_csrf: this._csrf,email: this.email.value}).then((response) => {
+            axios.post('/doesEmailExist', { _csrf: this._csrf, email: this.email.value }).then((response) => {
                 if (response.data) {
                     this.email.isUnique = false
                     this.showValidationError(this.email, "This email is already used.")
@@ -137,7 +137,7 @@ export default class RegistrationForm {
             })
         }
 
-        
+
     }
 
     usernameImmediately() {
@@ -152,9 +152,9 @@ export default class RegistrationForm {
         if (!this.username.errors) {
             this.hideValidationError(this.username)
         }
-        
 
-        
+
+
     }
     usernameAfterDelay() {
         if (this.username.value.length < 3) {
@@ -162,7 +162,7 @@ export default class RegistrationForm {
         }
 
         if (!this.username.errors) {
-            axios.post('/doesUsernameExist', {_csrf: this._csrf, username: this.username.value}).then( (response) => {
+            axios.post('/doesUsernameExist', { _csrf: this._csrf, username: this.username.value }).then((response) => {
                 if (response.data) {
                     this.showValidationError(this.username, "This username is already taken")
                     this.username.isUnique = false
@@ -186,10 +186,8 @@ export default class RegistrationForm {
     }
 
 
-    
-
     insertValidationElements() {
-        this.allFields.forEach(function(el) {
+        this.allFields.forEach(function (el) {
             el.insertAdjacentHTML("afterend", '<div class="alert alert-danger small liveValidateMessage"></div>')
         })
     }

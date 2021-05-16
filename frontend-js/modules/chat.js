@@ -21,13 +21,13 @@ export default class Chat {
             e.preventDefault()
             this.sendMessageToServer()
         })
-        this.openIcon.addEventListener("click", () => this.showChat() )
+        this.openIcon.addEventListener("click", () => this.showChat())
         this.closeIcon.addEventListener("click", () => this.hideChat())
     }
 
     // methods
     sendMessageToServer() {
-        this.socket.emit('chatMessageFromBrowser', {message: this.chatField.value})
+        this.socket.emit('chatMessageFromBrowser', { message: this.chatField.value })
         this.chatLog.insertAdjacentHTML('beforeend', DOMPurify.sanitize(`
         <div class="chat-self">
             <div class="chat-message">

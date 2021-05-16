@@ -9,7 +9,7 @@ const app = express()
 const sanitizeHTML = require('sanitize-html')
 
 
-app.use(express.urlencoded({extended: false}))
+app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 
 app.use('/api', require('./router-api'))
@@ -17,17 +17,17 @@ app.use('/api', require('./router-api'))
 //configure the session package
 let sessionOptions = session({
     secret: "JavaScript is cool",
-    store: new MongoStore({client: require('./db')}),
+    store: new MongoStore({ client: require('./db') }),
     resave: false,
     saveUninitialized: false,
-    cookie: {maxAge: 1000 * 60 * 60 * 24, httpOnly:true}
+    cookie: { maxAge: 1000 * 60 * 60 * 24, httpOnly: true }
 })
 //using features
 app.use(sessionOptions)
 app.use(flash())
 
 //middleware function that passes session data to every views to make them easy to access.
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     //make our markdown function available
     res.locals.filterUserHTML = function (content) {
         return sanitizeHTML(markdown(content), {
@@ -37,7 +37,7 @@ app.use(function(req, res, next) {
 
 
     //make current user id available on the current object
-    if (req.session.user) {req.visitorId = req.session.user._id} else {req.visitorId = 0}
+    if (req.session.user) { req.visitorId = req.session.user._id } else { req.visitorId = 0 }
 
     // make user session data available within view templates
     res.locals.user = req.session.user
@@ -64,19 +64,19 @@ app.set('view engine', 'ejs')
 
 app.use(csrf())
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.locals.csrfToken = req.csrfToken()
     next()
 })
 //routing to home page
 app.use('/', router)
 
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     if (err) {
         if (err.code == "EBADCSRFTOKEN") {
             req.flash('errors', "Cross site request forgery detected.")
             req.session.save(() => res.redirect('/'))
-        } else{
+        } else {
             res.render('404')
         }
     }
@@ -85,18 +85,18 @@ app.use(function(err, req, res, next) {
 const server = require('http').createServer(app)
 const io = require('socket.io')(server)
 
-io.use(function(socket, next) {
+io.use(function (socket, next) {
     sessionOptions(socket.request, socket.request.res, next)
 })
 
-io.on('connection', function(socket) {
+io.on('connection', function (socket) {
     if (socket.request.session.user) {
-            let user = socket.request.session.user
+        let user = socket.request.session.user
 
-            socket.emit('welcome', {username: user.username, avatar: user.avatar})
+        socket.emit('welcome', { username: user.username, avatar: user.avatar })
 
-            socket.on('chatMessageFromBrowser', function(data) {
-            socket.broadcast.emit('chatMessageFromServer', {message: sanitizeHTML(data.message,{allowedTags: [], allowedAttributes: {}}), username: user.username, avatar: user.avatar})
+        socket.on('chatMessageFromBrowser', function (data) {
+            socket.broadcast.emit('chatMessageFromServer', { message: sanitizeHTML(data.message, { allowedTags: [], allowedAttributes: {} }), username: user.username, avatar: user.avatar })
         })
     }
 })

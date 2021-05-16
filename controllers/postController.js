@@ -1,16 +1,19 @@
 const Post = require('../models/Post')
 const sendgrid = require('@sendgrid/mail')
 
+
+//!Currently Sendgrid is not working
 sendgrid.setApiKey(process.env.SENDGRIDAPIKEY)
 //rendering the create-post
-exports.viewCreateScreen = function(req, res) {
-    res.render('create-post', {title: "Create a Post"})
+exports.viewCreateScreen = function (req, res) {
+    res.render('create-post', { title: "Create a Post" })
 }
 
 //creating a post 
 exports.create = function (req, res) {
     let post = new Post(req.body, req.session.user._id)
     post.create().then(function (newId) {
+        //!Sendgrid Emails are not working because I need to add a verified domain.
         const msg = {
             to: 'djrayhan8@gmail.com',
             from: 'hello@eggbook.com',
@@ -20,8 +23,8 @@ exports.create = function (req, res) {
         }
         sendgrid.send(msg).then(() => {
             console.log("mail sent successfully")
-        }).catch(() => {
-            console.log("Something is wrong.")
+        }).catch((error) => {
+            console.log(error)
         })
         req.flash("success", "New Post Successfully Created.")
         req.session.save(() => res.redirect(`post/${newId}`))
@@ -43,40 +46,40 @@ exports.apiCreate = function (req, res) {
 exports.viewSingle = async function (req, res) {
     try {
         let post = await Post.findSingleById(req.params.id, req.visitorId)
-        res.render('single-post-screen', {post: post, title: post.title})
+        res.render('single-post-screen', { post: post, title: post.title })
     } catch (error) {
         res.render('404')
     }
 }
 
-exports.viewEditScreen = async function(req, res) {
+exports.viewEditScreen = async function (req, res) {
     try {
-      let post = await Post.findSingleById(req.params.id, req.visitorId)
-      if (post.isVisitorOwner) {
-        res.render("edit-post", {post: post, title: "Edit Post"})
-      } else {
-        req.flash("errors", "You do not have permission to perform that action.")
-        req.session.save(() => res.redirect("/"))
-      }
+        let post = await Post.findSingleById(req.params.id, req.visitorId)
+        if (post.isVisitorOwner) {
+            res.render("edit-post", { post: post, title: "Edit Post" })
+        } else {
+            req.flash("errors", "You do not have permission to perform that action.")
+            req.session.save(() => res.redirect("/"))
+        }
     } catch {
-      res.render("404")
+        res.render("404")
     }
-  }
+}
 
 exports.edit = function (req, res) {
     let post = new Post(req.body, req.visitorId, req.params.id)
-    post.update().then( (status) => {
+    post.update().then((status) => {
         // the post was successfully updated in the database
         // or user did have permission, but there where validation errors.
         if (status == "success") {
             //post was updated in db
             req.flash("success", "Post was successfully updated")
-            req.session.save(function() {
+            req.session.save(function () {
                 res.redirect(`/post/${req.params.id}/edit`)
             })
 
         } else {
-            post.errors.forEach(function(error) {
+            post.errors.forEach(function (error) {
                 req.flash("errors", error)
                 req.session.save(function () {
                     res.redirect(`/post/${req.params.id}/edit`)
@@ -98,7 +101,7 @@ exports.edit = function (req, res) {
 exports.delete = function (req, res) {
     Post.delete(req.params.id, req.visitorId).then(() => {
         req.flash("success", "The post was succesfully deleted.")
-        req.session.save( () => {
+        req.session.save(() => {
             res.redirect(`/profile/${req.session.user.username}`)
         })
     }).catch(() => {
@@ -116,7 +119,7 @@ exports.apiDelete = function (req, res) {
 }
 
 exports.search = function (req, res) {
-    Post.search(req.body.searchTerm).then( posts => {
+    Post.search(req.body.searchTerm).then(posts => {
         res.json(posts)
     }).catch(() => {
         res.json([])
